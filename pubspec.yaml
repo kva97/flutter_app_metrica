@@ -26,7 +26,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: com.emallstudio.appmetrica_sdk
+        package: appmetrica_sdk
         pluginClass: AppmetricaSdkPlugin
       ios:
         pluginClass: AppmetricaSdkPlugin

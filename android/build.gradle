@@ -1,4 +1,4 @@
-group 'com.emallstudio.appmetrica_sdk'
+group 'appmetrica_sdk'
 version '1.0'
 
 buildscript {

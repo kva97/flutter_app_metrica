@@ -1,8 +1,4 @@
-// Copyright 2019 EM ALL iT Studio. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-package com.emallstudio.appmetrica_sdk;
+package appmetrica_sdk;
 
 import androidx.annotation.NonNull;
 
@@ -64,7 +60,7 @@ public class AppmetricaSdkPlugin implements MethodCallHandler, FlutterPlugin {
     private void onAttachedToEngine(Context applicationContext, BinaryMessenger binaryMessenger) {
         application = (Application) applicationContext;
         context = applicationContext;
-        methodChannel = new MethodChannel(binaryMessenger, "emallstudio.com/appmetrica_sdk");
+        methodChannel = new MethodChannel(binaryMessenger, "appmetrica_sdk");
         methodChannel.setMethodCallHandler(this);
     }
 
