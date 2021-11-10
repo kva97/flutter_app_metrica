@@ -37,13 +37,13 @@ class AppmetricaSdk {
 
   Future<void> reportBeginCheckoutEvent({
     required String orderID,
-    required List produts,
+    required List products,
   }) async {
     await _channel.invokeMethod<void>(
       'beginCheckoutEvent',
       <String, dynamic>{
         'orderID': orderID,
-        'produts': produts,
+        'products': products,
       },
     );
   }
