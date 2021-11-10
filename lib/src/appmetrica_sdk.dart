@@ -17,12 +17,11 @@ class AppmetricaSdk {
   /// Android only. The [maxReportsInDatabaseCount] is maximum number of events that can be stored in the database on the phone before being sent to AppMetrica. If there are more events, old records will begin to be deleted. The default value is 1000 (allowed values from 100 to 10000).
   Future<void> activate(
       {required String apiKey,
-        int sessionTimeout = 10,
-        bool locationTracking = true,
-        bool statisticsSending = true,
-        bool crashReporting = true,
-        int maxReportsInDatabaseCount = 1000}) async {
-
+      int sessionTimeout = 10,
+      bool locationTracking = true,
+      bool statisticsSending = true,
+      bool crashReporting = true,
+      int maxReportsInDatabaseCount = 1000}) async {
     /// Set the API Key after activation.
     globalApiKey = apiKey;
 
@@ -34,6 +33,53 @@ class AppmetricaSdk {
       'crashReporting': crashReporting,
       'maxReportsInDatabaseCount': maxReportsInDatabaseCount,
     });
+  }
+
+  Future<void> reportBeginCheckoutEvent({
+    required String orderID,
+    required List produts,
+  }) async {
+    await _channel.invokeMethod<void>(
+      'beginCheckoutEvent',
+      <String, dynamic>{
+        'orderID': orderID,
+        'produts': produts,
+      },
+    );
+  }
+
+  Future<void> reportAddCartItemEvent({
+    required int actualPrice,
+    required int productOriginalPrice,
+    required String productName,
+    required String productID,
+  }) async {
+    await _channel.invokeMethod<void>(
+      'addCartItemEvent',
+      <String, dynamic>{
+        'actualPrice': actualPrice,
+        'productOriginalPrice' : productOriginalPrice,
+        'productName': productName,
+        'productID':productID,
+      }
+    );
+  }
+
+  Future<void> reportRemoveCartItemEvent({
+    required int actualPrice,
+    required int productOriginalPrice,
+    required String productName,
+    required String productID,
+  }) async {
+    await _channel.invokeMethod<void>(
+        'removeCartItemEvent',
+        <String, dynamic>{
+          'actualPrice': actualPrice,
+          'productOriginalPrice' : productOriginalPrice,
+          'productName': productName,
+          'productID':productID,
+        }
+    );
   }
 
   Future<void> reportShowProductCardEvent({
@@ -55,10 +101,14 @@ class AppmetricaSdk {
     );
   }
 
-  Future<void> reportShowScreenEvent ({required String screenWhereFromOpen}) async {
-    await _channel.invokeMethod<void>('showScreenEvent', <String, dynamic>{
-      'screenWhereFromOpen': screenWhereFromOpen,
-    },);
+  Future<void> reportShowScreenEvent(
+      {required String screenWhereFromOpen}) async {
+    await _channel.invokeMethod<void>(
+      'showScreenEvent',
+      <String, dynamic>{
+        'screenWhereFromOpen': screenWhereFromOpen,
+      },
+    );
   }
 
   Future<void> reportShowProductDetailsEvent({

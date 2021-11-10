@@ -1,7 +1,9 @@
 package appmetrica_sdk;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 
+import android.os.Build;
 import android.util.Log;
 import android.app.Activity;
 import android.app.Application;
@@ -10,6 +12,9 @@ import android.content.Intent;
 
 import android.util.SparseArray;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
@@ -25,7 +30,9 @@ import com.yandex.metrica.YandexMetrica;
 import com.yandex.metrica.YandexMetricaConfig;
 import com.yandex.metrica.YandexMetricaDefaultValues;
 import com.yandex.metrica.ecommerce.ECommerceAmount;
+import com.yandex.metrica.ecommerce.ECommerceCartItem;
 import com.yandex.metrica.ecommerce.ECommerceEvent;
+import com.yandex.metrica.ecommerce.ECommerceOrder;
 import com.yandex.metrica.ecommerce.ECommercePrice;
 import com.yandex.metrica.ecommerce.ECommerceProduct;
 import com.yandex.metrica.ecommerce.ECommerceReferrer;
@@ -123,10 +130,97 @@ public class AppmetricaSdkPlugin implements MethodCallHandler, FlutterPlugin {
             case "showProductDetailsEvent":
                 handleShowProductDetailsEvent(call, result);
                 break;
+            case "addCartItemEvent":
+                handleAddCartItemEvent(call, result);
+            case "removeCartItemEvent":
+                handleRemoveCartItemEvent(call, result);
+            case "beginCheckoutEvent":
+                handleBeginCheckoutEvent(call, result);
             default:
                 result.notImplemented();
                 break;
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private  void handleBeginCheckoutEvent (MethodCall call, Result result){
+        try {
+            Map<String, Object> arguments = (Map<String, Object>) call.arguments;
+
+            final String orderID = (String) arguments.get("orderID");
+            final List<List> products = (List<List>) arguments.get("products");
+            final List<ECommerceCartItem> cartedItems = new ArrayList<>();
+
+            products.forEach((List singleProduct) ->{
+                ECommercePrice actualPrice = new ECommercePrice(new ECommerceAmount((Integer) singleProduct.get(2), "RUB"));
+                ECommercePrice originalPrice = new ECommercePrice(new ECommerceAmount((Integer) singleProduct.get(3), "RUB"));
+
+                ECommerceProduct product = new ECommerceProduct((String) singleProduct.get(0)).setName((String) singleProduct.get(1)).setOriginalPrice(originalPrice).setActualPrice(actualPrice);
+                ECommerceCartItem addedItems = new ECommerceCartItem(product, actualPrice, 1.0);
+
+                cartedItems.add(addedItems);
+            });
+
+            ECommerceOrder order = new ECommerceOrder(orderID, cartedItems);
+
+            ECommerceEvent beginCheckoutEvent = ECommerceEvent.beginCheckoutEvent(order);
+
+            YandexMetrica.reportECommerce(beginCheckoutEvent);
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+            result.error("Error sending addCartItemEvent", e.getMessage(), null);
+        }
+        result.success(null);
+    }
+
+    private  void handleAddCartItemEvent (MethodCall call, Result result) {
+        try {
+            Map<String, Object> arguments = (Map<String, Object>) call.arguments;
+
+            final Integer productActualPrice = (Integer) arguments.get("actualPrice");
+            final Integer productOriginalPrice = (Integer) arguments.get("productOriginalPrice");
+            final String productName = (String) arguments.get("productName");
+            final String productID = (String) arguments.get("productID");
+
+            ECommercePrice actualPrice = new ECommercePrice(new ECommerceAmount(productActualPrice, "RUB"));
+            ECommercePrice originalPrice = new ECommercePrice(new ECommerceAmount(productOriginalPrice, "RUB"));
+            ECommerceProduct product = new ECommerceProduct(productID).setActualPrice(actualPrice).setOriginalPrice(originalPrice).setName(productName);
+
+            ECommerceCartItem addedItems = new ECommerceCartItem(product, actualPrice, 1.0);
+            ECommerceEvent addCartItemEvent = ECommerceEvent.addCartItemEvent(addedItems);
+
+            YandexMetrica.reportECommerce(addCartItemEvent);
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+            result.error("Error sending addCartItemEvent", e.getMessage(), null);
+        }
+        result.success(null);
+    }
+
+    private  void handleRemoveCartItemEvent (MethodCall call, Result result) {
+        try {
+            Map<String, Object> arguments = (Map<String, Object>) call.arguments;
+            final Integer productActualPrice = (Integer) arguments.get("actualPrice");
+            final Integer productOriginalPrice = (Integer) arguments.get("productOriginalPrice");
+            final String productName = (String) arguments.get("productName");
+            final String productID = (String) arguments.get("productID");
+
+            ECommercePrice actualPrice = new ECommercePrice(new ECommerceAmount(productActualPrice, "RUB"));
+            ECommercePrice originalPrice = new ECommercePrice(new ECommerceAmount(productOriginalPrice, "RUB"));
+            ECommerceProduct product = new ECommerceProduct(productID).setActualPrice(actualPrice).setOriginalPrice(originalPrice).setName(productName);
+
+            ECommerceCartItem removedItems = new ECommerceCartItem(product, actualPrice, 1.0);
+            ECommerceEvent removeCartItemEvent = ECommerceEvent.removeCartItemEvent(removedItems);
+
+            YandexMetrica.reportECommerce(removeCartItemEvent);
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+            result.error("Error sending removeCartItemEvent", e.getMessage(), null);
+        }
+        result.success(null);
     }
 
     private void handleShowProductCardEvent(MethodCall call, Result result) {
