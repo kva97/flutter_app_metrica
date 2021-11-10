@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
@@ -151,14 +152,17 @@ public class AppmetricaSdkPlugin implements MethodCallHandler, FlutterPlugin {
             final List<List> products = (List<List>) arguments.get("products");
             final List<ECommerceCartItem> cartedItems = new ArrayList<>();
 
-            products.forEach((List singleProduct) ->{
-                ECommercePrice actualPrice = new ECommercePrice(new ECommerceAmount((Integer) singleProduct.get(2), "RUB"));
-                ECommercePrice originalPrice = new ECommercePrice(new ECommerceAmount((Integer) singleProduct.get(3), "RUB"));
+            products.forEach(new Consumer<List>() {
+                @Override
+                public void accept(List singleProduct) {
+                    ECommercePrice actualPrice = new ECommercePrice(new ECommerceAmount((Integer) singleProduct.get(2), "RUB"));
+                    ECommercePrice originalPrice = new ECommercePrice(new ECommerceAmount((Integer) singleProduct.get(3), "RUB"));
 
-                ECommerceProduct product = new ECommerceProduct((String) singleProduct.get(0)).setName((String) singleProduct.get(1)).setOriginalPrice(originalPrice).setActualPrice(actualPrice);
-                ECommerceCartItem addedItems = new ECommerceCartItem(product, actualPrice, 1.0);
+                    ECommerceProduct product = new ECommerceProduct((String) singleProduct.get(0)).setName((String) singleProduct.get(1)).setOriginalPrice(originalPrice).setActualPrice(actualPrice);
+                    ECommerceCartItem addedItems = new ECommerceCartItem(product, actualPrice, 1.0);
 
-                cartedItems.add(addedItems);
+                    cartedItems.add(addedItems);
+                }
             });
 
             ECommerceOrder order = new ECommerceOrder(orderID, cartedItems);
