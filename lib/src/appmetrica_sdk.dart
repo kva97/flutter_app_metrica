@@ -35,6 +35,9 @@ class AppmetricaSdk {
     });
   }
 
+  ///Sends the begining of checkout event with [orderID] and List of lists of products as a set of [products]
+  ///important that the internal lists should contain the attributes in the following form:
+  ///0 - [itemID], 1 - [itemName], 2 - [actualPrice], 3 - [originalPrice]
   Future<void> reportBeginCheckoutEvent({
     required String orderID,
     required List products,
@@ -48,6 +51,23 @@ class AppmetricaSdk {
     );
   }
 
+  ///Sends the purchase event with [orderID] and List of lists of products as a set of [products]
+  ///important that the internal lists should contain the attributes in the following form:
+  ///0 - [itemID], 1 - [itemName], 2 - [actualPrice], 3 - [originalPrice]
+  Future<void> reportPurchaseEvent({
+    required String orderID,
+    required List products,
+  }) async {
+    await _channel.invokeMethod<void>(
+      'purchaseEvent',
+      <String, dynamic>{
+        'orderID': orderID,
+        'products': products,
+      },
+    );
+  }
+
+  ///Sends an event for adding an item from the shopping cart to the AppMetrica server.
   Future<void> reportAddCartItemEvent({
     required int actualPrice,
     required int productOriginalPrice,
@@ -65,6 +85,7 @@ class AppmetricaSdk {
     );
   }
 
+  ///Sends an event for deleting an item from the shopping cart to the AppMetrica server.
   Future<void> reportRemoveCartItemEvent({
     required int actualPrice,
     required int productOriginalPrice,
@@ -82,6 +103,7 @@ class AppmetricaSdk {
     );
   }
 
+  ///Sends an event recording the viewing of a specific product card to the AppMetrica server.
   Future<void> reportShowProductCardEvent({
     required int actualPrice,
     required int productOriginalPrice,
@@ -101,6 +123,7 @@ class AppmetricaSdk {
     );
   }
 
+  ///Sends an event recording the viewing of a specific screen of the app to the AppMetrica server.
   Future<void> reportShowScreenEvent(
       {required String screenWhereFromOpen}) async {
     await _channel.invokeMethod<void>(
@@ -111,6 +134,7 @@ class AppmetricaSdk {
     );
   }
 
+  ///Sends an event recording the viewing of a specific product detailed description to the AppMetrica server.
   Future<void> reportShowProductDetailsEvent({
     required String actualPrice,
     required String productOriginalPrice,

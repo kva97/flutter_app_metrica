@@ -137,14 +137,50 @@ public class AppmetricaSdkPlugin implements MethodCallHandler, FlutterPlugin {
                 handleRemoveCartItemEvent(call, result);
             case "beginCheckoutEvent":
                 handleBeginCheckoutEvent(call, result);
+            case "purchaseEvent":
+                handlePurchaseEvent(call,result);
             default:
                 result.notImplemented();
                 break;
         }
     }
 
+    private void handlePurchaseEvent(MethodCall call, Result result) {
+        try {
+            Map<String, Object> arguments =(Map<String, Object>) call.arguments;
+
+            final String orderID = (String) arguments.get("orderID");
+            final List<List> products = (List<List>) arguments.get("products");
+            final List<ECommerceCartItem> cartedItems = new ArrayList<>();
+
+            products.forEach(new Consumer<List>() {
+                @Override
+                public void accept(List singleProduct) {
+                    ECommercePrice actualPrice = new ECommercePrice(new ECommerceAmount((Integer) singleProduct.get(2), "RUB"));
+                    ECommercePrice originalPrice = new ECommercePrice(new ECommerceAmount((Integer) singleProduct.get(3), "RUB"));
+
+                    ECommerceProduct product = new ECommerceProduct((String) singleProduct.get(0)).setName((String) singleProduct.get(1)).setOriginalPrice(originalPrice).setActualPrice(actualPrice);
+                    ECommerceCartItem addedItems = new ECommerceCartItem(product, actualPrice, 1.0);
+
+                    cartedItems.add(addedItems);
+                }
+            });
+
+            ECommerceOrder order = new ECommerceOrder(orderID, cartedItems);
+
+            ECommerceEvent purchaseEvent = ECommerceEvent.purchaseEvent(order);
+
+            YandexMetrica.reportECommerce(purchaseEvent);
+
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage(), e);
+            result.error("Error sending purchaseEvent", e.getMessage(), null);
+        }
+        result.success(null);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
-    private  void handleBeginCheckoutEvent (MethodCall call, Result result){
+    private void handleBeginCheckoutEvent (MethodCall call, Result result){
         try {
             Map<String, Object> arguments = (Map<String, Object>) call.arguments;
 
@@ -173,7 +209,7 @@ public class AppmetricaSdkPlugin implements MethodCallHandler, FlutterPlugin {
 
         } catch (Exception e) {
             Log.e(TAG, e.getMessage(), e);
-            result.error("Error sending addCartItemEvent", e.getMessage(), null);
+            result.error("Error sending beginCheckoutEvent", e.getMessage(), null);
         }
         result.success(null);
     }
