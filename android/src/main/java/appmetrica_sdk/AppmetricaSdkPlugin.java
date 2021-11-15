@@ -133,12 +133,16 @@ public class AppmetricaSdkPlugin implements MethodCallHandler, FlutterPlugin {
                 break;
             case "addCartItemEvent":
                 handleAddCartItemEvent(call, result);
+                break;
             case "removeCartItemEvent":
                 handleRemoveCartItemEvent(call, result);
+                break;
             case "beginCheckoutEvent":
                 handleBeginCheckoutEvent(call, result);
+                break;
             case "purchaseEvent":
                 handlePurchaseEvent(call,result);
+                break;
             default:
                 result.notImplemented();
                 break;
